@@ -1,73 +1,96 @@
-# Welcome to your Lovable project
+# Timologia Oik
 
-## Project info
+On-prem web application for searching and administering vendor data. The frontend is built as static files and served by Nginx inside Docker.
 
-**URL**: https://lovable.dev/projects/009f1083-2d75-4ddf-aeab-009ee67dc9fb
+This repository is self-hosted and maintained independently. It talks directly to Supabase from the browser. There is no application server in this repo.
 
-## How can I edit this code?
+## What the sysadmin needs to know
 
-There are several ways of editing your application.
+- Runtime: Docker
+- Exposed port: `8088`
+- External dependency: Supabase
+- Admin login: password-only login, initial password is `admin123`
 
-**Use Lovable**
+## Deploy on Ubuntu
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/009f1083-2d75-4ddf-aeab-009ee67dc9fb) and start prompting.
+Install Docker:
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```bash
+sudo apt update
+sudo apt install -y docker.io docker-compose-plugin git
+sudo systemctl enable --now docker
 ```
 
-**Edit a file directly in GitHub**
+Clone the repo:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+git clone <REPO_URL>
+cd timologia-oik
+```
 
-**Use GitHub Codespaces**
+Build the image:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```bash
+sudo docker build -t csv-viewer .
+```
 
-## What technologies are used for this project?
+Start the container with Compose:
 
-This project is built with:
+```bash
+sudo docker compose up -d
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Open the app at:
 
-## How can I deploy this project?
+```text
+http://SERVER_IP:8088
+```
 
-Simply open [Lovable](https://lovable.dev/projects/009f1083-2d75-4ddf-aeab-009ee67dc9fb) and click on Share -> Publish.
+If `ufw` is enabled, allow the port:
 
-## Can I connect a custom domain to my Lovable project?
+```bash
+sudo ufw allow 8088/tcp
+```
 
-Yes, you can!
+## Daily operations
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Check container status:
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+```bash
+sudo docker ps
+```
+
+View logs:
+
+```bash
+sudo docker logs -f csv-viewer
+```
+
+Restart:
+
+```bash
+sudo docker compose restart
+```
+
+Stop:
+
+```bash
+sudo docker compose down
+```
+
+## Updating the app
+
+Pull the latest code, rebuild, and restart:
+
+```bash
+git pull
+sudo docker build -t csv-viewer .
+sudo docker compose up -d
+```
+
+## Notes
+
+- The Docker image serves static files with Nginx on container port `80`.
+- Host port `8088` is defined in [docker-compose.yml](/home/kmh/timologia-oik/docker-compose.yml).
+- Supabase URL and public key are currently hardcoded in [client.ts](/home/kmh/timologia-oik/src/integrations/supabase/client.ts).
+- The initial admin password is `admin123`. This is hardcoded in the frontend and is not suitable for a real production deployment.
