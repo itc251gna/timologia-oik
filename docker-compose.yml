@@ -1,0 +1,8 @@
+services:
+  csv-viewer:
+    image: csv-viewer
+    container_name: csv-viewer
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
